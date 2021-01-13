@@ -42,6 +42,7 @@ public abstract class PathToken {
             String property = properties.get(0);
             String evalPath = Utils.concat(currentPath, "['", property, "']");
             Object propertyVal = readObjectProperty(property, model, ctx);
+            boolean propertyCreated = false;
             if(propertyVal == JsonProvider.UNDEFINED){
                 // Conditions below heavily depend on current token type (and its logic) and are not "universal",
                 // so this code is quite dangerous (I'd rather rewrite it & move to PropertyPathToken and implemented
@@ -50,7 +51,9 @@ public abstract class PathToken {
                 assert this instanceof PropertyPathToken : "only PropertyPathToken is supported";
 
                 if(isLeaf()) {
-                    if(ctx.options().contains(Option.DEFAULT_PATH_LEAF_TO_NULL)){
+                    if(ctx.options().contains(Option.DEFAULT_PATH_LEAF_TO_NULL) ||
+                            ctx.options().contains(Option.CREATE_PATH_IF_DEFINITE)
+                    ){
                         propertyVal =  null;
                     } else {
                         if(ctx.options().contains(Option.SUPPRESS_EXCEPTIONS) ||
@@ -69,11 +72,19 @@ public abstract class PathToken {
                         // branches could be examined.
                         return;
                     } else {
-                        throw new PathNotFoundException("Missing property in path " + evalPath);
+                        if (isUpstreamDefinite() && isTokenDefinite() && ctx.options().contains(Option.CREATE_PATH_IF_DEFINITE)) {
+                            propertyVal = ctx.jsonProvider().createMap();
+                            propertyCreated = true;
+                        } else {
+                            throw new PathNotFoundException("Missing property in path " + evalPath);
+                        }
                     }
                 }
             }
             PathRef pathRef = ctx.forUpdate() ? PathRef.create(model, property) : PathRef.NO_OP;
+            if (propertyCreated) {
+                pathRef.set(propertyVal, ctx.configuration());
+            }
             if (isLeaf()) {
                 ctx.addResult(evalPath, pathRef, propertyVal);
             }

@@ -33,6 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.jayway.jsonpath.JsonPath.compile;
+import static com.jayway.jsonpath.Option.CREATE_PATH_IF_DEFINITE;
 import static com.jayway.jsonpath.internal.Utils.notEmpty;
 import static com.jayway.jsonpath.internal.Utils.notNull;
 import static java.util.Arrays.asList;
@@ -129,7 +130,7 @@ public class JsonContext implements DocumentContext {
 
     @Override
     public DocumentContext set(JsonPath path, Object newValue) {
-        List<String> modified = path.set(json, newValue, configuration.addOptions(Option.AS_PATH_LIST));
+        List<String> modified = path.set(json, newValue, configuration.addOptions(Option.AS_PATH_LIST, Option.CREATE_PATH_IF_DEFINITE));
         if (logger.isDebugEnabled()) {
             for (String p : modified) {
                 logger.debug("Set path {} new value {}", p, newValue);

@@ -43,6 +43,11 @@ public enum Option {
     DEFAULT_PATH_LEAF_TO_NULL,
 
     /**
+     * Modify json object on evaluation
+     */
+    CREATE_PATH_IF_DEFINITE,
+
+    /**
      * Makes this implementation more compliant to the Goessner spec. All results are returned as Lists.
      */
     ALWAYS_RETURN_LIST,

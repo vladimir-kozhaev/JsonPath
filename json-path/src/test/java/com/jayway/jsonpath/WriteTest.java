@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 import static com.jayway.jsonpath.JsonPath.parse;
+import static com.jayway.jsonpath.JsonPath.using;
+import static com.jayway.jsonpath.Option.CREATE_PATH_IF_DEFINITE;
+import static com.jayway.jsonpath.Option.DEFAULT_PATH_LEAF_TO_NULL;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,6 +36,34 @@ public class WriteTest extends BaseTest {
         Object o = parse(JSON_DOCUMENT).set("$.int-max-property", 1).json();
 
         Integer result = parse(o).read("$.int-max-property");
+
+        assertThat(result).isEqualTo(1);
+    }
+
+    @Test
+    public void an_root_property_can_be_created() {
+        Object o = parse(JSON_DOCUMENT).set("$.new-int-max-property", 2).json();
+
+        Integer result = parse(o).read("$.new-int-max-property");
+
+        assertThat(result).isEqualTo(2);
+    }
+
+    @Test(expected = PathNotFoundException.class)
+    public void an_root_property_read_undefined() {
+        parse(JSON_DOCUMENT).read("$.new-int-max-property");
+    }
+
+    @Test(expected = PathNotFoundException.class)
+    public void an_root_property_read_undefined_path() {
+        parse(JSON_DOCUMENT).read("$.new-obj.new-int-max-property");
+    }
+
+    @Test
+    public void an_root_property_can_be_created_path() {
+        Object o = parse(JSON_DOCUMENT).set("$.new-obj.new-int-max-property", 1).json();
+
+        Integer result = parse(o).read("$.new-obj.new-int-max-property");
 
         assertThat(result).isEqualTo(1);
     }
